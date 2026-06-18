@@ -86,7 +86,7 @@
 
         <div class="update-info">
             データ基準日：2026年3月末時点（行政公開データ）<br>
-            サイト最終更新日：2026年6月18日
+            サイト最終更新日：2026年6月19日
         </div>
 
         <div class="search-box">
@@ -283,7 +283,7 @@
 
         function handleEnter(e) { if (e.key === 'Enter') searchByKeyword(); }
 
-        // 👑 サニタイズ関数を追加（XSS攻撃防止）
+        // 👑 【改善適用】サニタイズ関数を追加（XSS攻撃防止）
         function sanitize(str) {
             if (!str) return '';
             return String(str)
@@ -300,7 +300,7 @@
             for (let i = currentIndex; i < limit; i++) {
                 const item = displayData[i];
                 
-                // 👑 HTMLに埋め込む前にデータを安全にサニタイズする
+                // 👑 【改善適用】HTMLに埋め込む前にデータを安全にサニタイズする
                 const sName = sanitize(item.name);
                 const sAddress = sanitize(item.address);
                 const sTel = sanitize(item.tel);
@@ -357,6 +357,7 @@
                 </details>
                 `;
 
+                // 👑 【重要】「運営法人の親サイトが表示される場合〜」の注記を完全に保護・維持
                 card.innerHTML = `
                     ${distanceHtml}<br>
                     <span class="service-tag">${item.service_type}</span>
