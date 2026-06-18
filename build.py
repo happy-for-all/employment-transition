@@ -10,7 +10,7 @@ import math
 import shutil
 
 # ==========================================
-# 👑 まごころ就労移行支援ナビ: 自動ビルドエンジン (Ver 1.3 関東・関西限定版)
+# 👑 まごころ就労移行支援ナビ: 自動ビルドエンジン (Ver 1.4 安全・限定統合版)
 # 開発者: ちゃろ ＆ AIバディ
 # 理念: HFA (Happy for All)
 # ==========================================
@@ -27,7 +27,7 @@ SERVICE_DEFINITIONS = [
     }
 ]
 
-# 👑 関東・関西の13都府県網羅辞書
+# 👑 関東・関西限定の13都府県網羅辞書
 MUNICIPAL_COORDS = {
     # 🌿 関西（大阪府）
     "大阪市": {"lat": 34.6937, "lon": 135.5022},
@@ -184,10 +184,12 @@ def run_build():
     print(f"🌸 まごころ就労移行支援ナビ 自動ビルド開始")
     print("==========================================")
 
+    # 👑 【改善適用】ビルド前に dist フォルダをクリアして安全な状態を作る
     dist_root = "dist"
     if os.path.exists(dist_root):
         shutil.rmtree(dist_root)
     
+    # 👑 出力先は就労移行支援ナビ用ディレクトリ
     target_dir = os.path.join("dist", "employment-transition")
     os.makedirs(target_dir, exist_ok=True)
     
@@ -200,11 +202,13 @@ def run_build():
         
         print(f"\n📡 処理開始: 【{service_name}】 (ファイル: {zip_file_path})")
 
+        # 👑 【安全策適用】sys.exit(1)ではなく、スキップして次へ
         if not os.path.exists(zip_file_path):
-            print(f"❌ [エラー] 『{zip_file_path}』が見つかりません。")
-            sys.exit(1)
+            print(f"⚠️ [警告] 『{zip_file_path}』が見つかりません。スキップします。")
+            continue
 
         df = None
+        # 👑 【改善適用】zip_file の開始から CSV 読み込みまで全体を with でまとめて安全に囲む
         try:
             with zipfile.ZipFile(zip_file_path) as zip_file:
                 csv_files = [f for f in zip_file.namelist() if f.lower().endswith('.csv') and not f.startswith('__MACOSX')]
@@ -226,22 +230,25 @@ def run_build():
                     except Exception:
                         continue
         except Exception as e:
+            # 👑 【安全策適用】スキップして次へ
             print(f"❌ ZIP解凍エラー ({service_name}): {e}")
-            sys.exit(1)
+            continue
 
         if df is None:
-            print(f"❌ CSV読込失敗 ({service_name})。ビルドを中止します。")
-            sys.exit(1)
+            # 👑 【安全策適用】スキップして次へ
+            print(f"❌ CSV読込失敗 ({service_name})。スキップします。")
+            continue
 
         df.columns = df.columns.str.strip().str.replace('\n', '').str.replace('\r', '')
 
         col_address_city = [col for col in df.columns if "事業所" in col and "住所" in col and "市区町村" in col]
         if not col_address_city:
-            print(f"❌ 事業所住所（市区町村）列が見つかりません。ビルドを中止します。")
-            sys.exit(1)
+            # 👑 【安全策適用】スキップして次へ
+            print(f"❌ 事業所住所（市区町村）列が見つかりません ({service_name})。スキップします。")
+            continue
         target_col = col_address_city[0]
 
-        # 👑 【復活】関東・関西の13都府県への絞り込み処理
+        # 👑 関東・関西の13都府県への絞り込み処理
         target_prefectures = (
             "東京都", "神奈川県", "埼玉県", "千葉県", "茨城県", "栃木県", "群馬県",
             "大阪府", "京都府", "兵庫県", "奈良県", "和歌山県", "滋賀県"
@@ -259,13 +266,14 @@ def run_build():
             name_kana = safe_get(row, ["事業所の名称_かな", "事業所名称_かな", "フリガナ", "ふりがな"])
             address_detail = safe_get(row, ["事業所住所（番地以降）", "事業所住所(番地以降)"])
             
+            # 👑 【改善適用】address_detail の長さ判定を正規化後に行う
             address_detail_normalized = unicodedata.normalize('NFKC', address_detail)
             if not re.search(r'[0-9]', address_detail_normalized) or len(address_detail_normalized) <= 2:
                 address_detail = ""
                 
             address = city + address_detail
 
-            # 👑 【復活】対象外エリアの二重ブロック
+            # 👑 対象外エリアの二重ブロック
             exclude_keywords = [
                 "北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県",
                 "新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県",
@@ -336,7 +344,7 @@ def run_build():
                     elif city.startswith("奈良県"): lat, lon = MUNICIPAL_COORDS["フェイルセーフ奈良県庁"]["lat"], MUNICIPAL_COORDS["フェイルセーフ奈良県庁"]["lon"]
                     elif city.startswith("和歌山県"): lat, lon = MUNICIPAL_COORDS["フェイルセーフ和歌山県庁"]["lat"], MUNICIPAL_COORDS["フェイルセーフ和歌山県庁"]["lon"]
                     elif city.startswith("滋賀県"): lat, lon = MUNICIPAL_COORDS["フェイルセーフ滋賀県庁"]["lat"], MUNICIPAL_COORDS["フェイルセーフ滋賀県庁"]["lon"]
-                    # 👑 【修正反映】大阪府の明示的追加
+                    # 👑 【改善適用】大阪府の明示的追加
                     elif city.startswith("大阪府"): lat, lon = MUNICIPAL_COORDS["フェイルセーフ大阪府庁"]["lat"], MUNICIPAL_COORDS["フェイルセーフ大阪府庁"]["lon"]
                     else: lat, lon = MUNICIPAL_COORDS["フェイルセーフ大阪府庁"]["lat"], MUNICIPAL_COORDS["フェイルセーフ大阪府庁"]["lon"]
 
@@ -375,6 +383,11 @@ def run_build():
     if os.path.exists("index.html"):
         shutil.copy2("index.html", os.path.join(target_dir, "index.html"))
     
+    # 👑 【安全策適用】1件もデータが生成されなかった場合のみ、ここで初めてシステムを止める二段構え
+    if not summary_logs:
+        print("❌ [致命的エラー] 1件も正常にデータが生成されませんでした。ビルドを中断します。")
+        sys.exit(1)
+
     print("\n==========================================")
     for log in summary_logs: print(log)
     print("==========================================")
