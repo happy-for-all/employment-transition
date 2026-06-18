@@ -189,7 +189,7 @@ def run_build():
     print(f"🌸 まごころ就労移行支援ナビ 自動ビルド開始")
     print("==========================================")
 
-    target_dir = os.path.join("dist", "welfare-portal-AandB")
+    target_dir = os.path.join("dist", "employment-transition")
     os.makedirs(target_dir, exist_ok=True)
     
     summary_logs = []
