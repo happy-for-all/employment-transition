@@ -24,10 +24,18 @@ jobs:
         pip install requests pandas
 
     - name: Run Build Script
-      # 👑 フェイルセーフ：ここでエラーになれば処理は強制終了し、CFには上書きされません
       run: python build.py
+
+    # 👑 【修正提案適用】Node.jsのセットアップとWranglerの安全なインストール
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install Wrangler
+      run: npm install -g wrangler
 
     - name: Deploy to Cloudflare Workers
       env:
         CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      run: npx wrangler deploy
+      run: wrangler deploy
