@@ -26,7 +26,7 @@ jobs:
     - name: Run Build Script
       run: python build.py
 
-    # 👑 【修正提案適用】Node.jsのセットアップとWranglerの安全なインストール
+    # 👑 【改善適用】Node.jsのセットアップとWranglerの安全なインストール
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
