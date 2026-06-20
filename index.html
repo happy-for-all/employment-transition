@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="関東・関西の「就労移行支援事業所」を現在地から近い順に探せる無料検索ポータル。利用時間や定休日、定員などの詳細情報もひと目でわかります。一般就労を目指すあなたの最初の一歩を優しくサポートします。">
+    <meta name="description" content="全国の「就労移行支援事業所」を現在地から近い順に探せる無料検索ポータル。利用時間や定休日、定員などの詳細情報もひと目でわかります。一般就労を目指すあなたの最初の一歩を優しくサポートします。">
     
     <link rel="canonical" href="https://for-welfare.pray-power-is-god-and-cocoro.com/employment-transition/">
     <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%3E%3Ctext%20y%3D%270.9em%27%20font-size%3D%2790%27%3E%F0%9F%8C%BF%3C%2Ftext%3E%3C%2Fsvg%3E">
-    <title>【無料検索】まごころ就労移行支援ナビ（関東・関西）</title>
+    <title>【無料検索】まごころ就労移行支援ナビ（全国対応）</title>
 
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-LTJJ73RNC5"></script>
 <script>
@@ -76,7 +76,7 @@
 </head>
 <body>
 
-    <h1 class="header">🌿 まごころ就労移行支援ナビ<br>（関東・関西）</h1>
+    <h1 class="header">🌿 まごころ就労移行支援ナビ<br>（全国対応）</h1>
 
     <div class="container">
         <div class="disclaimer">
@@ -91,6 +91,12 @@
 
         <div class="search-box">
             <h2 style="margin-top: 0; font-size: 1.25rem; line-height: 1.4;">現在地から一番近い<br>事業所を探す</h2>
+
+            <!-- 👑 【全国展開アドオン】都道府県セレクター -->
+            <select id="prefSelect" class="search-input" style="margin-bottom: 15px;">
+                <option value="">都道府県を選択（GPSなら自動入力されます）</option>
+            </select>
+
             <p style="font-size: 0.85rem; color: var(--text-sub); margin-bottom: 20px;">※位置情報はサーバーには送信されません。<br>※「位置情報」をONにする必要があります。</p>
             <button class="btn-gps" onclick="sortByGPS()">📍 現在地から近い順に探す</button>
 
@@ -183,20 +189,76 @@
     <button id="btnTop" class="btn-top" onclick="scrollToTop()">↑</button>
 
     <script>
+        // 👑 【全国展開アドオン】47都道府県：県庁座標 + slug
+        const PREFECTURE_OFFICES = [
+            { name: "北海道", slug: "hokkaido", lat: 43.0642, lon: 141.3469 },
+            { name: "青森県", slug: "aomori", lat: 40.8244, lon: 140.7400 },
+            { name: "岩手県", slug: "iwate", lat: 39.7036, lon: 141.1527 },
+            { name: "宮城県", slug: "miyagi", lat: 38.2682, lon: 140.8721 },
+            { name: "秋田県", slug: "akita", lat: 39.7186, lon: 140.1024 },
+            { name: "山形県", slug: "yamagata", lat: 38.2404, lon: 140.3633 },
+            { name: "福島県", slug: "fukushima", lat: 37.7503, lon: 140.4676 },
+            { name: "茨城県", slug: "ibaraki", lat: 36.3418, lon: 140.4468 },
+            { name: "栃木県", slug: "tochigi", lat: 36.5657, lon: 139.8836 },
+            { name: "群馬県", slug: "gunma", lat: 36.3911, lon: 139.0608 },
+            { name: "埼玉県", slug: "saitama", lat: 35.8569, lon: 139.6489 },
+            { name: "千葉県", slug: "chiba", lat: 35.6047, lon: 140.1232 },
+            { name: "東京都", slug: "tokyo", lat: 35.6895, lon: 139.6917 },
+            { name: "神奈川県", slug: "kanagawa", lat: 35.4478, lon: 139.6425 },
+            { name: "新潟県", slug: "niigata", lat: 37.9026, lon: 139.0232 },
+            { name: "富山県", slug: "toyama", lat: 36.6953, lon: 137.2113 },
+            { name: "石川県", slug: "ishikawa", lat: 36.5947, lon: 136.6256 },
+            { name: "福井県", slug: "fukui", lat: 36.0652, lon: 136.2216 },
+            { name: "山梨県", slug: "yamanashi", lat: 35.6642, lon: 138.5685 },
+            { name: "長野県", slug: "nagano", lat: 36.6513, lon: 138.1810 },
+            { name: "岐阜県", slug: "gifu", lat: 35.3912, lon: 136.7223 },
+            { name: "静岡県", slug: "shizuoka", lat: 34.9769, lon: 138.3831 },
+            { name: "愛知県", slug: "aichi", lat: 35.1802, lon: 136.9066 },
+            { name: "三重県", slug: "mie", lat: 34.7303, lon: 136.5086 },
+            { name: "滋賀県", slug: "shiga", lat: 35.0045, lon: 135.8686 },
+            { name: "京都府", slug: "kyoto", lat: 35.0210, lon: 135.7556 },
+            { name: "大阪府", slug: "osaka", lat: 34.6862, lon: 135.5201 },
+            { name: "兵庫県", slug: "hyogo", lat: 34.6913, lon: 135.1830 },
+            { name: "奈良県", slug: "nara", lat: 34.6853, lon: 135.8327 },
+            { name: "和歌山県", slug: "wakayama", lat: 34.2260, lon: 135.1675 },
+            { name: "鳥取県", slug: "tottori", lat: 35.5039, lon: 134.2378 },
+            { name: "島根県", slug: "shimane", lat: 35.4723, lon: 133.0505 },
+            { name: "岡山県", slug: "okayama", lat: 34.6618, lon: 133.9344 },
+            { name: "広島県", slug: "hiroshima", lat: 34.3966, lon: 132.4596 },
+            { name: "山口県", slug: "yamaguchi", lat: 34.1859, lon: 131.4714 },
+            { name: "徳島県", slug: "tokushima", lat: 34.0658, lon: 134.5593 },
+            { name: "香川県", slug: "kagawa", lat: 34.3401, lon: 134.0434 },
+            { name: "愛媛県", slug: "ehime", lat: 33.8417, lon: 132.7661 },
+            { name: "高知県", slug: "kochi", lat: 33.5597, lon: 133.5311 },
+            { name: "福岡県", slug: "fukuoka", lat: 33.6064, lon: 130.4181 },
+            { name: "佐賀県", slug: "saga", lat: 33.2494, lon: 130.2988 },
+            { name: "長崎県", slug: "nagasaki", lat: 32.7448, lon: 129.8737 },
+            { name: "熊本県", slug: "kumamoto", lat: 32.7898, lon: 130.7417 },
+            { name: "大分県", slug: "oita", lat: 33.2382, lon: 131.6126 },
+            { name: "宮崎県", slug: "miyazaki", lat: 31.9111, lon: 131.4239 },
+            { name: "鹿児島県", slug: "kagoshima", lat: 31.5602, lon: 130.5581 },
+            { name: "沖縄県", slug: "okinawa", lat: 26.2124, lon: 127.6809 },
+        ];
+
         let allData = [];
         let displayData = [];
         let currentIndex = 0;
         const ITEMS_PER_PAGE = 10;
 
-        async function fetchSelectedData() {
+        // 👑 【全国展開アドオン】都道府県指定フェッチ（シンプル版）
+        async function fetchSelectedData(prefSlug) {
+            if (!prefSlug) {
+                alert("都道府県を選択してください。");
+                return false;
+            }
             document.getElementById('results').innerHTML = `<div style="text-align: center; color: var(--text-sub); padding: 20px;">📡 データを取得中...</div>`;
-            
-            const filesToFetch = ['data_shuro_transition.json'];
+
+            const filesToFetch = [`data_shuro_transition_${prefSlug}.json`];
             allData = [];
 
             try {
                 const fetchPromises = filesToFetch.map(file => fetch('./' + file).then(res => {
-                    if (!res.ok) throw new Error("File not found");
+                    if (!res.ok) throw new Error("File not found: " + file);
                     return res.json();
                 }));
                 const resultsArray = await Promise.allSettled(fetchPromises);
@@ -213,9 +275,23 @@
                 return true;
             } catch (error) {
                 console.error(error);
-                document.getElementById('results').innerHTML = `<div style="text-align: center; color: #dc2626;">データの読み込みに失敗しました。時間をおいて再試行してください。</div>`;
+                document.getElementById('results').innerHTML = `<div style="text-align: center; color: #dc2626;">データの読み込みに失敗しました。この都道府県のデータがまだない可能性があります。</div>`;
                 return false;
             }
+        }
+
+        // 👑 追加：近い都道府県を割り出す関数
+        function findNearestPrefecture(userLat, userLon) {
+            let nearest = null;
+            let minDist = Infinity;
+            for (const pref of PREFECTURE_OFFICES) {
+                const d = calculateDistance(userLat, userLon, pref.lat, pref.lon);
+                if (d < minDist) {
+                    minDist = d;
+                    nearest = pref;
+                }
+            }
+            return nearest;
         }
 
         async function sortByGPS() {
@@ -224,41 +300,49 @@
                 return;
             }
 
-            const success = await fetchSelectedData();
-            if(!success) return;
-
-            document.getElementById('results').innerHTML = `<div style="text-align: center; color: var(--text-sub); padding: 20px;">📍 距離を計算中...</div>`;
+            document.getElementById('results').innerHTML = `<div style="text-align: center; color: var(--text-sub); padding: 20px;">📍 現在地を取得中...</div>`;
             document.getElementById('moreContainer').style.display = 'none';
 
-            navigator.geolocation.getCurrentPosition(position => {
+            navigator.geolocation.getCurrentPosition(async position => {
                 const userLat = position.coords.latitude;
                 const userLon = position.coords.longitude;
+
+                const nearestPref = findNearestPrefecture(userLat, userLon);
+                document.getElementById('prefSelect').value = nearestPref.slug;
+
+                const success = await fetchSelectedData(nearestPref.slug);
+                if (!success) return;
 
                 displayData = allData.map(item => {
                     const dist = calculateDistance(userLat, userLon, item.lat, item.lon);
                     return { ...item, distance: dist };
                 });
-
                 displayData.sort((a, b) => a.distance - b.distance);
-                
+
                 currentIndex = 0;
                 document.getElementById('results').innerHTML = "";
                 showMore();
 
             }, error => {
-                alert("位置情報が取得できませんでした。スマホの設定で許可するか、検索窓をご利用ください。");
+                alert("位置情報が取得できませんでした。スマホの設定で許可するか、都道府県を選んで検索窓をご利用ください。");
                 document.getElementById('results').innerHTML = "";
             });
         }
 
         async function searchByKeyword() {
             const keyword = document.getElementById('searchInput').value.trim().normalize("NFKC").toLowerCase();
+            const prefSlug = document.getElementById('prefSelect').value;
+
+            if (!prefSlug) {
+                alert("先に都道府県を選択してください。");
+                return;
+            }
             if (!keyword) {
                 alert("検索キーワードを入力してください。");
                 return;
             }
 
-            const success = await fetchSelectedData();
+            const success = await fetchSelectedData(prefSlug);
             if(!success) return;
             
             displayData = allData.filter(item => {
@@ -266,9 +350,7 @@
                 const nameStr = (item.name || "").normalize("NFKC").toLowerCase();
                 const kanaStr = (item.name_kana || "").normalize("NFKC").toLowerCase();
                 return addressStr.includes(keyword) || nameStr.includes(keyword) || kanaStr.includes(keyword);
-            }).map(item => {
-                return { ...item, distance: null };
-            });
+            }).map(item => ({ ...item, distance: null }));
 
             currentIndex = 0;
             document.getElementById('results').innerHTML = "";
@@ -283,7 +365,6 @@
 
         function handleEnter(e) { if (e.key === 'Enter') searchByKeyword(); }
 
-        // 👑 【改善適用】サニタイズ関数を追加（XSS攻撃防止）
         function sanitize(str) {
             if (!str) return '';
             return String(str)
@@ -300,7 +381,6 @@
             for (let i = currentIndex; i < limit; i++) {
                 const item = displayData[i];
                 
-                // 👑 【改善適用】HTMLに埋め込む前にデータを安全にサニタイズする
                 const sName = sanitize(item.name);
                 const sAddress = sanitize(item.address);
                 const sTel = sanitize(item.tel);
@@ -357,7 +437,6 @@
                 </details>
                 `;
 
-                // 👑 【重要】「運営法人の親サイトが表示される場合〜」の注記を完全に保護・維持
                 card.innerHTML = `
                     ${distanceHtml}<br>
                     <span class="service-tag">${item.service_type}</span>
@@ -397,6 +476,14 @@
         function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
         
         window.onload = () => {
+            // 👑 【全国展開アドオン】セレクトボックスの選択肢を動的生成
+            const sel = document.getElementById('prefSelect');
+            PREFECTURE_OFFICES.forEach(pref => {
+                const opt = document.createElement('option');
+                opt.value = pref.slug;
+                opt.textContent = pref.name;
+                sel.appendChild(opt);
+            });
             document.getElementById('results').innerHTML = `<div style="text-align: center; color: var(--text-sub); padding: 20px; background: white; border-radius: 8px;">準備完了です。上のボタンから探してください。</div>`;
         };
     </script>
