@@ -72,7 +72,7 @@ PREFECTURE_OFFICES = {
 
 SERVICE_DEFINITIONS = [
     {
-        "zip_file": "sfkopendata_202603_60.zip",
+        "zip_file": "sfkopendata_202609_60.zip",
         "service_name": "就労移行支援",
         "output_key": "shuro_transition",
     }
